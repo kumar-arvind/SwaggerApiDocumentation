@@ -1,0 +1,1702 @@
+openapi: 3.0.0
+info:
+  title: OpenPrise Platform
+  description: Platform to handle various tasks
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/daass
+paths:
+  
+  
+  /api/processes:
+    
+          
+    post:
+        summary: creates new Bot process
+        description: here we post new bot processes 
+        tags:
+          - Bots
+        
+        requestBody:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewSaveProcess'
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                   $ref : '#/components/schemas/NewSaveResponse'
+                  
+          
+          '500':
+            description: Error in postSave method    
+        
+    get:
+      summary: Retrieve a list of Bot processes
+      description: Responsible for retrieving a list of processes based on user preferences, search query, and other parameters
+      tags:
+        - Bots
+      parameters:
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+          description: The page number of the results being requested.
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: integer
+          description: The number of items to be included in each page of results.
+        - in: query
+          name: ignorePreferences
+          required: false
+          schema:
+            type: boolean
+          description: A setting to ignore user preferences or settings.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+                
+  /api/Processes/{id}:
+    get:
+      summary: Retrieve a specific process
+      description: Retrieves details of a specific process identified by its ID.
+      tags:
+        - Bots
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the process to retrieve.
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Process'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # /api/Processes/{id}:
+    delete:
+      summary: Delete the Bot process
+      tags:
+        - Bots
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID of the process to delete
+      responses:
+        '204':
+          description: No Content found
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '405':
+          description: Method Not Allowed
+        '409':
+          description: Conflict
+
+  
+    
+  /api/tags:
+    get:
+      summary: It check's user requested tag label is available or not
+      description: Retrieves a list of tags.
+      tags:
+        - Bots
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+
+  
+  /api/Processes/{processId}/getRunningStatus:
+    get:
+      summary: Get's running status of Bot process
+      tags:
+        - Bots
+      parameters:
+        - in: path
+          name: processId
+          required: true
+          schema:
+            type: integer
+          description: ID of the process to get running status
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isRunning:
+                    type: boolean
+                    example: true
+                  totalObjects:
+                    type: integer
+                    example: 1
+                  processingObject:
+                    type: integer
+                    example: 1
+                  stopProcessing:
+                    type: boolean
+                    example: false
+                  progressPercentage:
+                    type: number
+                    format: float
+                    example: 0.0
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  
+  
+  
+  
+  /api/Processes/{processId}/runNow:
+    get:
+      summary: Runs the specific id Bot, if it exists
+      tags:
+        - Bots
+      parameters:
+        - in: path
+          name: processId
+          required: true
+          schema:
+            type: integer
+          description: ID of the process to run
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: SUCCESS
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "entity not found"
+        '405':
+          description: Method Not Allowed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usageResults:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "Running the process is not allowed"
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "Process is already running"
+        '500':
+          description: Internal Server Error
+
+
+  
+  
+  /api/preferences:
+    get:
+      summary: It's responsible for fetching and returning a paginated list of user preferences
+      tags:
+        - Bots
+      parameters:
+        - in: query
+          name: preference
+          required: true
+          schema:
+            type: string
+          description: Name of the preference to retrieve
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferenceResponse'
+        '401':
+          description: Unauthorized
+  
+  
+  
+
+  /api/Processes/{processId}:
+    put:
+      summary: Update details of a specific process
+      tags:
+        - Bots
+      parameters:
+        - in: path
+          name: processId
+          required: true
+          schema:
+            type: integer
+          description: ID of the process to update
+        - in: header
+          name: Cookie
+          schema:
+            type: string
+          required: true
+          description: Session cookie for authentication
+        - in: header
+          name: Op-Xsrf-Token
+          schema:
+            type: string
+          required: true
+          description: XSRF token for preventing CSRF attacks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProcessRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessDetails'
+        '400':
+          description: Bad Request
+        '403':
+          description: Forbidden
+  
+  
+  /api/Processes/{processId}/updateProcessEntities:
+    put:
+      summary: Update process entities for a BOT
+      tags:
+        - Bots
+      parameters:
+        - in: path
+          name: processId
+          required: true
+          schema:
+            type: integer
+          description: ID of the process
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Bots'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bots'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "entityName running"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "entity not found"
+    
+  /api/process/workflowNameAvailStatus:
+    get:
+      summary: Check availability of a workflow name
+      tags:
+        - Bots
+      parameters:
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
+          description: Name of the workflow to check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+                example: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "Unauthorized"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "Forbidden"
+                    
+
+                
+  /api/datasources:
+    get:
+      summary: Retrieves a list of data sources based on specified parameters
+      tags:
+        - Bots
+      parameters:
+        - in: query
+          name: cols
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            Comma-separated list of columns to include in the response.
+            Example: cols=name,allowManualUpdate,status,dataAssessment,dataFormat,dataSourceAdmin,dpPath,dataProvider,authMethod
+        - in: query
+          name: allDsRequired
+          required: true
+          schema:
+            type: boolean
+          description: Indicates whether all data sources are required.
+        - in: query
+          name: isDataStore
+          required: true
+          schema:
+            type: boolean
+          description: Indicates whether the data is stored.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSourcesResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "Unauthorized"
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: string
+                    example: "TenantName Filter Forbidden"
+                  message:
+                    type: string
+                    example: "Users can only see data sources if they are a Manager or above"
+  
+  
+  
+  /api/Processes/{processId}/addEntitiesToProcess:
+    post:
+      summary: Add entities to a process
+      tags:
+        - Bots
+      parameters:
+        - in: path
+          name: processId
+          required: true
+          schema:
+            type: integer
+          description: ID of the process
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProcessEntityRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProcessEntityResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Process is currently running or paused"
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found  
+    
+    
+components:
+  schemas:
+  
+    
+    
+    
+    
+    NewAdminResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        enabled:
+          type: boolean
+        status:
+          type: string
+        organizationId:
+          type: integer
+        timeZone: 
+          type: integer
+        zip:
+          type: integer
+        state:
+          type: string
+        deleted:
+          type: boolean
+        passwordExpired:
+          type: boolean
+        accountExpired:
+          type: boolean
+        lastName:
+          type: string
+        authorities:
+          type: array
+          items: {}
+        agreeForDataTransfer:
+          type: boolean
+        lastLoginTime:
+          type: string
+          format: date-time
+        phone1:
+          type: string
+        skipSyncToOthersPods:
+          type: boolean
+        firstName: 
+          type: string
+        accountLocked:
+          type: boolean
+        skipPasswordEncoding:
+          type: boolean
+        phone2:
+          type: string
+        dataAdmin:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        skipSyncToOtherServices:
+          type: boolean
+        notes:  
+          type: string
+        displayName:
+          type: string
+        usernameForLogging:
+          type: string
+        organization:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewOrganizationResponse'
+        lastUpdated:
+          type: string
+          format: date-time
+        impersonatedBy:
+          type: string
+        avatar:
+          type: string
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewRoleResponse'
+        address1:
+          type: string
+        address2:
+          type: string
+        fullNameForLogging:
+          type: string
+        dismissUserWelcome:
+          type: boolean
+        username:
+          type: string
+        roleId:
+          type: integer
+        tenantName:
+          type: string
+        expiresOn:
+          type: string
+          format: date-time
+        fullName:
+          type: string
+        dismissTenantWelcome:
+          type: boolean
+        avatarId: 
+          type: integer
+        showOpenDataServices:
+          type: boolean
+        agreeForAutomatedProfiling:
+          type: boolean
+        observeDaylightSavings:
+          type: boolean
+        passwordUpdatedDate:
+          type: boolean
+        city:
+          type: string
+    
+    
+    
+    
+    
+    NewRoleResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        authority:
+          type: string
+        displayName:
+          type: string
+    
+    NewOrganizationResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantName:
+          type: string
+        accessControl: 
+          type: string
+        name:
+          type: string
+        regConfirmText:
+          type: string
+        selfRegistration:
+          type: string
+        urlRoot:  
+          type: string
+        status:
+          type: string
+        emailDomains:
+          type: string
+        description:
+          type: string
+        admin:
+          type: string
+    
+    
+    NewSaveResponse:
+      type: object
+      properties:
+        apiEnabled:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        description:
+          type: string
+        frequencyType:
+          type: integer
+        frequencyUnit:
+          type: string
+        id:
+          type: integer
+        isStuck:
+          type: boolean
+        lastUpdated:
+          type: boolean
+        usedInAppFactory:
+          type: boolean
+        name:
+          type: string
+        nextRunOnFailure:
+          type: string
+        notificationJSON:
+          type: string
+        runningStatus:
+          type: string
+        scheduleJobName:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+        tenantName: 
+          type: string
+        visibility:
+          type: string
+        misfireInstruction:
+          type: string
+        frequencySettings:
+          type: array
+          items: {}
+        
+        admins:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewAdminResponse'
+        entities:
+          type: array
+          items: {}
+        isAdmin:
+          type: boolean
+        tags:
+          type: array
+          items: {}
+      
+          
+        
+        
+    NewSaveProcess:
+      type: object
+      properties:
+        admins:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewAdmin'
+        startAt:
+          type: string
+          format: date-time
+        misfireInstruction: 
+          type: string
+        nextRunOnFailure:
+          type: string
+        notificationJSON:
+          type: string
+        frequency:
+          type: integer
+        frequencyUnit:
+          type: string
+        apiEnabled:
+          type: boolean
+        frequencySettings:
+          type: string
+        name: 
+          type: string
+          
+    Roleforcreating:
+      type: object
+      properties:
+        id: 
+          type: integer
+        authority:
+          type: string
+        order:
+          type: integer
+    
+    Organizationforcreating:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    NewAdmin:
+      type: object
+      properties:
+        accountLocked: 
+          type: boolean
+        address1:
+          type: string
+        address2:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+        deleted:
+          type: boolean
+        firstName: 
+          type: string
+        fullName:
+          type: string
+        state:
+          type: string
+        id:
+          type: integer
+        lastLoginTime:
+          type: string
+          format: date-time
+        lastName:
+          type: string
+        notes:
+          type: array
+          items:
+            type: string
+        passwordExpired:
+          type: boolean
+        phone1:
+          type: string
+        phone2:
+          type: string
+        role:
+          type: array
+          items:
+            $ref: '#/components/schemas/Roleforcreating'
+        
+        status:
+          type: string
+        tenantName:
+          type: string
+        username:
+          type: string
+        zip:
+          type: integer
+        dismissAnnouncement:
+          type: boolean
+        dismissTenantWelcome:
+          type: boolean
+        dismissUserWelcome:
+          type: boolean
+        expiresOn:
+          type: string
+          format: date-time
+        accountExpired:
+          type: boolean
+        displayName:
+          type: string
+        organization:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Organizationforcreating'
+        avatar: 
+          type: string
+        # apiEnabled:
+        #   boolean: true
+        initial:
+          type: string
+        
+    
+          
+    UpdateProcessRequest:
+      type: object
+      properties:
+        apiEnabled:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        description:
+          type: string
+        frequency:
+          type: integer
+        frequencyType:
+          type: string
+        frequencyUnit:
+          type: string
+        isStuck:
+          type: boolean
+        lastUpdated:
+          type: string
+          format: date-time
+        usedInAppFactory:
+          type: boolean
+        name:
+          type: string
+        nextRunOnFailure:
+          type: string
+        notificationJSON:
+          type: string
+        scheduleJobName:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+        tenantName:
+          type: string
+        visibility:
+          type: string
+        misfireInstruction:
+          type: string
+        frequencySettings:
+          type: string
+        admins:
+          type: array
+          items:
+            $ref: '#/components/schemas/Admin'
+        isAdmin:
+          type: boolean
+        runDetails:
+          type: object
+          properties:
+            last_run_at:
+              type: string
+              format: date-time
+            last_run_status:
+              type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    ProcessDetails:
+      type: object
+      properties:
+        apiEnabled:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        description:
+          type: string
+        frequency:
+          type: string
+        frequencyType:
+          type: string
+        frequencyUnit:
+          type: string
+        id:
+          type: integer
+        isStuck:
+          type: boolean
+        lastUpdated:
+          type: string
+          format: date-time
+        usedInAppFactory:
+          type: boolean
+        name:
+          type: string
+        nextRunOnFailure:
+          type: string
+        notificationJSON:
+          type: string
+        runningStatus:
+          type: string
+        scheduleJobName:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+        tenantName:
+          type: string
+        visibility:
+          type: string
+        misfireInstruction:
+          type: string
+        frequencySettings:
+          type: string
+        admins:
+          type: array
+          items:
+            $ref: '#/components/schemas/Admin'
+        isAdmin:
+          type: boolean
+        runDetails:
+          type: object
+          properties:
+            last_run_at:
+              type: string
+              format: date-time
+            last_run_status:
+              type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    Admin:
+      type: object
+      properties:
+        id:
+          type: integer
+        enabled:
+          type: boolean
+        status:
+          type: string
+        organizationId:
+          type: integer
+        timeZone:
+          type: string
+        zip:
+          type: string
+        state:
+          type: string
+        deleted:
+          type: boolean
+        passwordExpired:
+          type: boolean
+        accountExpired:
+          type: boolean
+        lastName:
+          type: string
+        authorities:
+          type: array
+          items:
+            type: string
+        agreeForDataTransfer:
+          type: boolean
+        phone1:
+          type: string
+        lastLoginTime:
+          type: string
+          format: date-time
+        skipSyncToOtherPods:
+          type: boolean
+        firstName:
+          type: string
+        accountLocked:
+          type: boolean
+        skipPasswordEncoding:
+          type: boolean
+        phone2:
+          type: string
+        dataAdmin:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        skipSyncToOtherServices:
+          type: boolean
+        notes:
+          type: string
+        displayName:
+          type: string
+        country:
+          type: string
+        isApiOnlyUser:
+          type: boolean
+        dismissAnnouncement:
+          type: boolean
+        usernameForLogging:
+          type: string
+        organization:
+          $ref: '#/components/schemas/Organization'
+        impersonatedBy:
+          type: string
+        avatar:
+          type: string
+        role:
+          $ref: '#/components/schemas/Role'
+        address1:
+          type: string
+        address2:
+          type: string
+        fullNameForLogging:
+          type: string
+        dismissUserWelcome:
+          type: boolean
+        username:
+          type: string
+        roleId:
+          type: integer
+        expiresOn:
+          type: string
+          format: date-time
+        fullName:
+          type: string
+        dismissTenantWelcome:
+          type: boolean
+        avatarId:
+          type: string
+        showOpenDataServices:
+          type: boolean
+        agreeForAutomatedProfiling:
+          type: boolean
+        observeDaylightSavings:
+          type: boolean
+        passwordUpdatedDate:
+          type: string
+          format: date-time
+        city:
+          type: string
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantName:
+          type: string
+        accessControl:
+          type: string
+        name:
+          type: string
+        regConfirmText:
+          type: string
+        selfRegistration:
+          type: string
+        urlRoot:
+          type: string
+        status:
+          type: string
+        emailDomains:
+          type: string
+        description:
+          type: string
+        admin:
+          type: string
+
+    Role:
+      type: object
+      properties:
+        id:
+          type: integer
+        authority:
+          type: string
+        displayName:
+          type: string
+
+    
+    
+    
+    
+    
+    
+    Process:
+      type: object
+      properties:
+        apiEnabled:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        description:
+          type: string
+        frequency:
+          type: string
+        frequencyType:
+          type: string
+        frequencyUnit:
+          type: string
+        id:
+          type: integer
+        isStuck:
+          type: boolean
+        lastUpdated:
+          type: string
+          format: date-time
+        usedInAppFactory:
+          type: boolean
+        name:
+          type: string
+        nextRunOnFailure:
+          type: string
+        notificationJSON:
+          type: string
+        runningStatus:
+          type: object
+        scheduleJobName:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+        tenantName:
+          type: string
+        visibility:
+          type: string
+        misfireInstruction:
+          type: string
+        frequencySettings:
+          type: string
+        admins:
+          type: array
+          items:
+            $ref: '#/components/schemas/Admin'
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+        isAdmin:
+          type: boolean
+        runDetails:
+          type: object
+          properties:
+            last_run_at:
+              type: string
+              format: date-time
+            last_run_status:
+              type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    Entity:
+      type: object
+      properties:
+        action:
+          type: string
+        actionDetails:
+          type: string
+        entityId:
+          type: integer
+        entityOrder:
+          type: integer
+        entityType:
+          type: string
+        id:
+          type: integer
+        noOfRetries:
+          type: integer
+        retryAfterMinutes:
+          type: integer
+        retryCounter:
+          type: integer
+        retryOnStatus:
+          type: string
+        runningStatus:
+          type: object
+        tenantName:
+          type: string
+        entityName:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+    
+    
+    
+    
+    
+    
+    
+    ProcessResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Process'
+
+    
+    
+      
+    
+    TagResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        data:
+          type: array
+          items:
+            type: string
+
+    
+    
+    
+  
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+
+  
+
+    UsageResults:
+      type: object
+      properties:
+        message:
+          type: string
+
+  
+  
+  
+    UserPreferenceResponse:
+        type: object
+        properties:
+          total:
+            type: integer
+          data:
+            type: array
+            items: {}
+
+  
+    Bots:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantName:
+          type: string
+        dateCreated:
+          type: string
+          format: date-time
+        retryAfterMinutes:
+          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+        noOfRetries:
+          type: integer
+        retryCounter:
+          type: integer
+        action:
+          type: string
+        entityOrder:
+          type: integer
+        retryOnStatus:
+          type: string
+        entityType:
+          type: string
+        runningStatus:
+          type: string
+        actionDetails:
+          type: string
+        entityId:
+          type: integer
+    BOTProcess:
+      type: object
+      properties:
+        apiEnabled:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        description:
+          type: string
+        frequency:
+          type: integer
+        frequencyType:
+          type: string
+        frequencyUnit:
+          type: string
+        id:
+          type: integer
+        isStuck:
+          type: boolean
+        lastUpdated:
+          type: string
+          format: date-time
+        usedInAppFactory:
+          type: boolean
+        name:
+          type: string
+        nextRunOnFailure:
+          type: string
+        notificationJSON:
+          type: string
+        runningStatus:
+          type: string
+        scheduleJobName:
+          type: string
+        startAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+        tenantName:
+          type: string
+        visibility:
+          type: string
+        misfireInstruction:
+          type: string
+        frequencySettings:
+          type: string
+        admins:
+          type: array
+          items:
+            $ref: '#/components/schemas/Admin'
+        isAdmin:
+          type: boolean
+        runDetails:
+          type: object
+        tags:
+          type: array
+          items:
+            type: string
+
+    ProcessEntity:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantName:
+          type: string
+        dateCreated:
+          type: string
+          format: date-time
+        retryAfterMinutes:
+          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+        noOfRetries:
+          type: integer
+        retryCounter:
+          type: integer
+        action:
+          type: string
+        entityOrder:
+          type: integer
+        retryOnStatus:
+          type: string
+        entityType:
+          type: string
+        runningStatus:
+          type: string
+        actionDetails:
+          type: string
+        entityId:
+          type: integer
+
+    
+    DataSourceAdmin:
+      type: object
+      properties:
+        id:
+          type: integer
+        enabled:
+          type: boolean
+        lastLoginTime:
+          type: string
+          format: date-time
+        passwordUpdatedDate:
+          type: string
+          format: date-time
+        organizationId:
+          type: integer
+        timeZone:
+          type: string
+        displayName:
+          type: string
+        zip:
+          type: string
+        fullName:
+          type: string
+        firstName:
+          type: string
+        state:
+          type: string
+        deleted:
+          type: boolean
+        passwordExpired:
+          type: boolean
+        accountExpired:
+          type: boolean
+        lastName:
+          type: string
+        authorities:
+          type: array
+          items:
+            type: string
+        agreeForDataTransfer:
+          type: boolean
+        role:
+          $ref: '#/components/schemas/Role'
+        phone1:
+          type: string
+        impersonatedBy:
+          type: string
+        skipSyncToOtherPods:
+          type: boolean
+        accountLocked:
+          type: boolean
+        skipPasswordEncoding:
+          type: boolean
+        phone2:
+          type: string
+        dataAdmin:
+          type: boolean
+        usernameForLogging:
+          type: string
+        username:
+          type: string
+        skipSyncToOtherServices:
+          type: boolean
+        notes:
+          type: string
+        country:
+          type: string
+        isApiOnlyUser:
+          type: boolean
+        dismissAnnouncement:
+          type: boolean
+        dateCreated:
+          type: string
+          format: date-time
+        organization:
+          $ref: '#/components/schemas/Organization'
+        avatar:
+          type: string
+        address1:
+          type: string
+        address2:
+          type: string
+        dismissUserWelcome:
+          type: boolean
+        roleId:
+          type: integer
+        fullNameForLogging:
+          type: string
+        tenantName:
+          type: string
+        expiresOn:
+          type: string
+          format: date-time
+        dismissTenantWelcome:
+          type: boolean
+        avatarId:
+          type: integer
+        showOpenDataServices:
+          type: boolean
+        status:
+          type: string
+        agreeForAutomatedProfiling:
+          type: boolean
+        observeDaylightSavings:
+          type: boolean
+          format: date-time
+        city:
+          type: string
+  
+
+    DataSourcesResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataSource'
+    DataSource:
+      type: object
+      properties:
+        tenantName:
+          type: string
+        allowManualUpdate:
+          type: boolean
+        dpPath:
+          type: string
+        dataFormat:
+          type: string
+        dataSourceAdmin:
+          $ref: '#/components/schemas/DataSourceAdmin'
+        name:
+          type: string
+        dataProvider:
+          type: string
+        id:
+          type: integer
+        authMethod:
+          type: string
+        status:
+          type: string
+        dataAssessment:
+          type: string
+        isAdmin:
+          type: boolean
+        scheduleStatus:
+          type: string
+    
+    NewProcessRequest:
+      type: object
+      properties:
+        admins:
+          type: array
+          items:
+            $ref: '#/components/schemas/Admin'
+        startAt:
+          type: string
+          format: date-time
+        misfireInstruction:
+          type: string
+        nextRunOnFailure:
+          type: string
+        notificationJSON:
+          type: string
+        frequency:
+          type: integer
+        frequencyUnit:
+          type: string
+        frequencyType:
+          type: string
+        name:
+          type: string
+
+
+    
+    
+    ProcessEntityRequest:
+      type: object
+      properties:
+        entityOrder:
+          type: integer
+        entityType:
+          type: string
+        entityId:
+          type: integer
+        action:
+          type: string
+        noOfRetries:
+          type: integer
+        retryAfterMinutes:
+          type: integer
+        retryOnStatus:
+          type: string
+    
+    ProcessEntityResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenantName:
+          type: string
+        dateCreated:
+          type: string
+          format: date-time
+        retryAfterMinutes:
+          type: integer
+        lastUpdated:
+          type: string
+          format: date-time
+        noOfRetries:
+          type: integer
+        retryCounter:
+          type: integer
+        action:
+          type: string
+        entityOrder:
+          type: integer
+        retryOnStatus:
+          type: string
+        entityType:
+          type: string
+        runningStatus:
+          type: string
+        actionDetails:
+          type: string
+        entityId:
+          type: integer
